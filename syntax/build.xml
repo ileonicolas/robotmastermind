@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<project name="robo" default="all" basedir=".">
+	
+  <property name="tatoo.dir" location="build-lib"/>
+  <property name="tatoo.jar" location="${tatoo.dir}/tatoo.jar"/>
+  
+  <property name="src" value="src"/>
+  <property name="classes" value="classes"/>
+  <property name="gen-src" value="gen-src"/>
+  <property name="ebnf.file" value="robo.ebnf"/>
+  	
+  <property name="lexer.package" value="fr.umlv.robomastermind.grammar.lexer"/>
+  <property name="parser.package" value="fr.umlv.robomastermind.grammar.parser"/>
+  <property name="tools.package" value="fr.umlv.robomastermind.grammar.tools"/>
+  
+  <target name="tasks">
+    <taskdef name="ebnf" classname="fr.umlv.tatoo.cc.ebnf.main.EBNFTask" classpath="${tatoo.jar}"/>
+  </target>
+  	
+  <target name="ebnf" depends="tasks">
+	<ebnf destination="${gen-src}" ebnfFile="${ebnf.file}"  parserType="lalr"
+	      logfile="log.html" loglevel="ALL">
+		<package lexer="${lexer.package}"/>
+		<package parser="${parser.package}"/>
+		<package tools="${tools.package}"/>
+	</ebnf>
+  </target>
+	
+  <target name="all" depends="ebnf">
+  </target>
+	
+	<target name="clean">
+		<delete dir="${classes}"/>
+		<delete dir="${gen-src}"/>
+		<!-- not to break eclipse source folders -->
+		<mkdir dir="${gen-src}"/>
+	</target>
+
+</project>

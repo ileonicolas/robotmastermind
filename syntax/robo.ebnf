@@ -1,0 +1,102 @@
+directives:
+  autoalias
+
+imports:
+  fr.umlv.robomastermind.grammar.ast.Token
+  fr.umlv.robomastermind.grammar.ast.ScriptNode
+  fr.umlv.robomastermind.grammar.ast.ItemNode
+  fr.umlv.robomastermind.grammar.ast.ProcedureNode
+  fr.umlv.robomastermind.grammar.ast.BlockNode
+  fr.umlv.robomastermind.grammar.ast.InstructionNode
+  fr.umlv.robomastermind.grammar.ast.ExpressionNode
+  fr.umlv.robomastermind.grammar.ast.FunctionCallNode
+  
+priorities:
+ not = 2 right
+ and = 1 left
+
+tokens:
+  lpar = '\('
+  rpar = '\)' 
+  lcurl = '\{'
+  rcurl = '\}'
+  not = '~'
+  and = '&|and'                  [and]
+  or = '\||or'                   [and]       
+  comma =  ','
+  
+  procedure = 'procedure'
+  _if = 'if'                   
+  _else = 'else'   
+  repeat = 'repeat'            
+  repeatWhile = 'repeatWhile' 
+  _break = 'break'            
+  end = 'end'
+  
+  id = "([a-z]|[A-Z]|_)([a-z]|[A-Z]|[0-9]|_)*"
+  number = "[0-9]+"
+  bool = "true|false"
+ 
+blanks:
+ space= "( |\t|\r|\n)+"
+
+comments:
+ comment="#([^\r\n])*(\r)?\n"
+ 
+types:
+  'id': Token<String>
+  'number': Token<Integer>
+  'bool': Token<Boolean> 
+  'repeat': Token<?>
+  'repeatWhile': Token<?>
+  'if': Token<?>
+  'break': Token<?>
+  'end': Token<?>
+  'lcurl': Token<?>
+  script: ScriptNode
+  item: ItemNode
+  proc: ProcedureNode
+  block: BlockNode
+  instr: InstructionNode
+  expr: ExpressionNode
+  funcall: FunctionCallNode
+
+starts:
+  script
+
+productions:
+ script = item*  { script }
+        ;
+ 
+ item = instr        { item_instr }
+     | proc          { item_proc }
+     ;
+      
+ proc =  'procedure' 'id' '(' 'id'/'comma'* ')'  block    { proc }
+        ;
+      
+ block = '{' instr* '}'    { block }
+       ; 
+      
+ instr = funcall                                          { instr_funcall }
+       | 'repeat' '(' 'number'? ')' block                 { instr_repeat }
+       | 'repeatWhile' '(' expr ')' block                 { instr_repeat_while }
+       | 'break'                                          { instr_break }                           
+       | 'if' '(' expr ')' block                          { instr_if }
+       | 'if' '(' expr ')' block 'else' block             { instr_if_else }
+       | 'end'                                            { instr_end }
+       ;
+
+ funcall = 'id' '(' expr/'comma'* ')'     { funcall }
+         ;
+  
+ expr = 'number'                                                         { expr_number }
+      | 'bool'                                                           { expr_bool }
+      | 'id'                                                             { expr_id }
+      | '(' expr ')'                                                     { expr_parens }         
+      | 'not' expr                                           [not]       { expr_not }
+      | expr 'and' expr                                      [and]       { expr_and }
+      | expr 'or' expr                                       [and]       { expr_or }
+      | funcall                                                          { expr_funcall }
+      ;
+   
